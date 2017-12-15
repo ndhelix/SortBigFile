@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,7 +15,7 @@ namespace SortBigFile
     public partial class Form1 : Form
     {
         const int MinTextLength = 3;
-        const int MaxTextLength = 18;
+        const int MaxTextLength = 25;
 
         public Form1()
         {
@@ -25,16 +26,37 @@ namespace SortBigFile
 
         private void button1_Click( object sender, EventArgs e )
         {
+            lblStatus.Text = "Generating...";
+            Application.DoEvents();
             string filename = txtFile.Text;
             int linecount = int.Parse( txtLineCount.Text );
             int lineblocksize = 10000;
             DateTime start = DateTime.Now;
+            object locker = new object();
+            //Parallel.For( 0, linecount / lineblocksize + 1, index =>
+            //    {
+            //        string block = GetRandomBlock( lineblocksize  );
+
+            //        new Thread( () =>
+            //        {
+
+            //            lock (locker)
+            //            {
+            //                File.AppendAllText( filename, block );
+            //            }
+            //        } ).Start();
+            //        //
+            //        //lock (o)
+            //        //{
+            //        //  bw.WriteLine( block );
+            //        //}
+            //    } );
+
             using (var bw = new StreamWriter( File.Open( filename, FileMode.Create ) ))
             {
-                for (int i=0; i< linecount; i += lineblocksize)
+                for (int i = 0; i < linecount; i += lineblocksize)
                 {
-                    string block = GetRandomBlock(Math.Min( linecount - i , lineblocksize ) );
-                    
+                    string block = GetRandomBlock( Math.Min( linecount - i, lineblocksize ) );
                     bw.WriteLine( block );
                 }
             }
@@ -56,6 +78,7 @@ namespace SortBigFile
         {
             int rnd = _random.Next( 100000 );
             string rndstring = GetRandomString();
+            //string rndstring = "0123456123123123123";
             return string.Format( "{0}. {1}", rnd, rndstring );
         }
 
@@ -67,7 +90,7 @@ namespace SortBigFile
 
         string CreatePassword( int length )
         {
-            const string valid = "abcdefghijklmnprstuvwxyzABCDEFGHIJKLMNPRSTUVWXYZ123456789 ,.:;";
+            const string valid = "abcdefghijklmnprstuvwxyzABCDEFGHIJKLMNPRSTUVWXYZ123456789 ,.:;-'\"";
             StringBuilder res = new StringBuilder();
             while (0 < length--)
             {
