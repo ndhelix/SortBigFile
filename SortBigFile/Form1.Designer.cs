@@ -30,7 +30,7 @@
         {
             this.txtFile = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btnSort = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.lblResult = new System.Windows.Forms.Label();
             this.txtHashToFind = new System.Windows.Forms.TextBox();
@@ -45,7 +45,7 @@
             this.txtFile.Name = "txtFile";
             this.txtFile.Size = new System.Drawing.Size(211, 27);
             this.txtFile.TabIndex = 0;
-            this.txtFile.Text = "D:\\D\\_BIGFILE\\bigfile.txt";
+            this.txtFile.Text = "E:\\T\\smallfile.txt";
             // 
             // button1
             // 
@@ -57,14 +57,15 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button2
+            // btnSort
             // 
-            this.button2.Location = new System.Drawing.Point(22, 106);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(144, 38);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "Read file";
-            this.button2.UseVisualStyleBackColor = true;
+            this.btnSort.Location = new System.Drawing.Point(22, 106);
+            this.btnSort.Name = "btnSort";
+            this.btnSort.Size = new System.Drawing.Size(144, 38);
+            this.btnSort.TabIndex = 1;
+            this.btnSort.Text = "Sort file";
+            this.btnSort.UseVisualStyleBackColor = true;
+            this.btnSort.Click += new System.EventHandler(this.btnSort_Click);
             // 
             // button3
             // 
@@ -127,7 +128,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblResult);
             this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.btnSort);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.txtHashToFind);
             this.Controls.Add(this.txtLineCount);
@@ -145,7 +146,7 @@
 
         private System.Windows.Forms.TextBox txtFile;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnSort;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label lblResult;
         private System.Windows.Forms.TextBox txtHashToFind;

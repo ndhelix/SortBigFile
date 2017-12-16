@@ -15,17 +15,18 @@ namespace SortBigFile
     public partial class Form1 : Form
     {
         const int MinTextLength = 3;
-        const int MaxTextLength = 25;
+        const int MaxTextLength = 200;
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        Random _random = new Random();
+        static Random _random = new Random();
 
         private void button1_Click( object sender, EventArgs e )
         {
+            _random.Next( 0, 100 );
             lblStatus.Text = "Generating...";
             Application.DoEvents();
             string filename = txtFile.Text;
@@ -52,16 +53,40 @@ namespace SortBigFile
             //        //}
             //    } );
 
+
+            //var TaskList = new List<Task<string>>();
+            //for (int i = 0; i < linecount; i += lineblocksize)
+            //{
+            //    int rowcount = Math.Min( linecount - i, lineblocksize );
+            //    Task<string> task = Task.Run( async () => await GetRandomBlockAsync( rowcount ) );
+            //    TaskList.Add( task );
+            //}
+
+            //Task.WhenAll( TaskList.ToArray() );
+
+            //using (var bw = new StreamWriter( File.Open( filename, FileMode.Create ) ))
+            //{
+            //    foreach (var task in TaskList)
+            //    {
+            //        bw.WriteLine( task.Result );
+            //    }
+            //}
+
             using (var bw = new StreamWriter( File.Open( filename, FileMode.Create ) ))
             {
                 for (int i = 0; i < linecount; i += lineblocksize)
                 {
                     string block = GetRandomBlock( Math.Min( linecount - i, lineblocksize ) );
-                    bw.WriteLine( block );
+                    bw.Write( block );
                 }
             }
             var timepass = DateTime.Now - start;
             lblStatus.Text = string.Format("{0} lines generated in {1}. ", linecount, timepass.ToString( @"hh\:mm\:ss" ) );
+        }
+
+        private async Task<string> GetRandomBlockAsync( int linecount )
+        {
+            return await Task.Run( () => GetRandomBlock( linecount ) );
         }
 
         private string GetRandomBlock( int linecount )
@@ -71,11 +96,16 @@ namespace SortBigFile
             StringBuilder sb = new StringBuilder( averagelinelength*linecount );
             for (int i = 0; i < linecount; i++)
                 sb.Append( GetRandomLine() + Environment.NewLine ) ;
-            return sb.ToString();
+                //sb.Append( "10540 JBGKJHGIJKGLKHJIHH:HIJKU" + Environment.NewLine );
+            string ret =  sb.ToString();
+            return ret;
         }
+
+
 
         private string GetRandomLine()
         {
+            //var random = new Random( new DateTime().Millisecond );
             int rnd = _random.Next( 100000 );
             string rndstring = GetRandomString();
             //string rndstring = "0123456123123123123";
@@ -99,5 +129,27 @@ namespace SortBigFile
             return res.ToString();
         }
 
+        private void btnSort_Click( object sender, EventArgs e )
+        {
+            lblStatus.Text = "Sorting...";
+            Application.DoEvents();
+            DateTime start = DateTime.Now;
+
+            string filename = txtFile.Text;
+            if (!File.Exists( filename ))
+            {
+                MessageBox.Show("File does not exist: " + filename );
+                return;
+            }
+
+            Sorter sorter = new Sorter();
+            long size = new System.IO.FileInfo( filename ).Length;
+            string sortedfilename = Path.Combine( Path.GetDirectoryName( filename ),
+                Path.GetFileNameWithoutExtension( filename ) + "_sorted" + Path.GetExtension( filename ) );
+            sorter.SortFile( filename, sortedfilename );
+
+            var timepass = DateTime.Now - start;
+            lblStatus.Text = string.Format( "{0} GB file sorted in {1}. ", size/1024/1024/1024, timepass.ToString( @"hh\:mm\:ss" ) );
+        }
     }
 }
