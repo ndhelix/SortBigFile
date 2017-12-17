@@ -149,7 +149,7 @@ namespace SortBigFile
             sorter.SortFile( filename, sortedfilename );
 
             var timepass = DateTime.Now - start;
-            lblStatus.Text = string.Format( "{0} GB file sorted in {1}. ", size/1024/1024/1024, timepass.ToString( @"hh\:mm\:ss" ) );
+            lblStatus.Text = string.Format( "{0:0.0} GB file sorted in {1}. ", (decimal)size/1024/1024/1024, timepass.ToString( @"hh\:mm\:ss" ) );
         }
     }
 }

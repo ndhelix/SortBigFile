@@ -18,7 +18,7 @@ namespace SortBigFile
 
             if (sizeMb < _sortSizeMbLimit)
             {
-                SortSmallFile( filename, sortedfilename );
+                SortSmallFile( filename, sortedfilename, true );
                 return;
             }
 
@@ -35,7 +35,7 @@ namespace SortBigFile
             {
                 string sortedfile = file + "_sorted";
                 sortedfilelist.Add( sortedfile );
-                Task task = Task.Run( () => SortSmallFile( file, sortedfile ) );
+                Task task = Task.Run( () => SortSmallFile( file, sortedfile, false ) );
                 TaskList.Add( task );
             }
             Task.WaitAll( TaskList.ToArray() );
@@ -74,7 +74,7 @@ namespace SortBigFile
                         sdict.Clear();
                         counter = 0;
                      }
-                    sdict.Add( line );
+                    sdict.Add( SwapLine(line) );
                     counter++;
                 }
                 if (sdict.Count > 0)
@@ -88,12 +88,15 @@ namespace SortBigFile
                     sw.Dispose();
                     files.Add( smallfile );
                 }
+                sdict = null;
             }
+            
+            GC.Collect();
 
             return files;
         }
 
-        private static void SortSmallFile( string filename, string sortedfilename )
+        private void SortSmallFile( string filename, string sortedfilename, bool swap )
         {
             var sdict = new List<string>( 10000000 );
 
@@ -103,6 +106,8 @@ namespace SortBigFile
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
+                    if (swap)
+                        line = SwapLine( line );
                     sdict.Add( line );
                 }
             }
@@ -113,12 +118,31 @@ namespace SortBigFile
             {
                 foreach (string item in sdict)
                 {
-                    bw.WriteLine( item );
+                    bw.WriteLine( swap ? UnSwapLine( item ): item );
                 }
             }
 
             sdict = null;
             GC.Collect();
+        }
+
+        private string UnSwapLine( string item )
+        {
+            var arr = item.Split( '\t' );
+            if (arr.Length < 1)
+                return item;
+            return arr[1].TrimStart( '0' ) + ". " + arr[0];
+        }
+
+        private string SwapLine( string line )
+        {
+            int pos = line.IndexOf( ". " );
+            if (pos == -1)
+                return line;
+            string strnum = line.Substring( 0, pos );
+            int num = int.Parse( strnum );
+            string ret = line.Substring( pos + 2 ) + "\t" + num.ToString( "0000000000" );
+            return ret;
         }
     }
 }
