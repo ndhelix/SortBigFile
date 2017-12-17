@@ -15,7 +15,7 @@ namespace SortBigFile
     public partial class Form1 : Form
     {
         const int MinTextLength = 3;
-        const int MaxTextLength = 200;
+        const int MaxTextLength = 20;
 
         public Form1()
         {
