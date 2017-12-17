@@ -11,8 +11,9 @@ namespace SortBigFile
     {
         static int _sortSizeMbLimit = 100;
         static int _smallfilesize = 100*1024*1024;
+        static int _mergepool = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
-                         //10000000
+        //10000000
         internal void SortFile( string filename, string sortedfilename )
         {
             long sizeMb = new System.IO.FileInfo( filename ).Length / 1024 / 1024;
@@ -25,7 +26,30 @@ namespace SortBigFile
 
             List<string> smallfilelist = CreateSmallFiles( filename );
             List<string> smallfilelistsorted = SortSmallFiles( smallfilelist );
-            //MergeFiles( smallfilelistsorted, sortedfilename );
+            MergeFiles( smallfilelistsorted, sortedfilename, 0 );
+        }
+
+        private void MergeFiles( List<string> filelist, string outputfilename, int recursionlevel )
+        {
+            if (filelist.Count <= _mergepool)
+            {
+                MergePlain( filelist, outputfilename, recursionlevel );
+            }
+        }
+
+        private static void MergePlain( List<string> filelist, string outputfilename, int recursionlevel )
+        {
+            StreamReader[] srarr = new StreamReader[filelist.Count];
+            string[] arr = new string[filelist.Count];
+
+            for (int i = 0; i < filelist.Count; i++)
+                srarr[i] = new StreamReader( filelist[i] );
+
+            for (int i = 0; i < filelist.Count; i++)
+                arr[i] = srarr[i].ReadLine();
+
+            for (int i = 0; i < filelist.Count; i++)
+                srarr[i].Dispose();
         }
 
         private List<string> SortSmallFiles( List<string> smallfilelist )
@@ -50,12 +74,10 @@ namespace SortBigFile
                 Directory.CreateDirectory( sortareadir );
             List<string> files = new List<string>();
             //StreamWriter sw;
-            var TaskList = new List<Task>();
+            //var TaskList = new List<Task>();
             using (StreamReader sr = new StreamReader( filename ))
             {
-                
-                var listlist = new List<List<string>>( );
-                listlist.Add( new List<string>( 10000000 ) );
+                var list = new List<string>( 10000000 );
                 //int counter = 0;
                 int filecounter = 0;
                 long currentsize = 0;
@@ -68,29 +90,28 @@ namespace SortBigFile
                     {
                         smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
 
-                        //WriteListToFile( list, smallfile );
-                        filecounter++;
-                        Task task = Task.Run( () => WriteListToFile( listlist[filecounter-1], smallfile ) );
-                        TaskList.Add( task );
+                         WriteListToFile( list, smallfile );
+                        //Task task = Task.Run( () => WriteListToFile( list, smallfile ) );
+                        //TaskList.Add( task );
 
-                        listlist.Add( new List<string>( 10000000 ) );
+                        filecounter++;
                         files.Add( smallfile );
+                        list.Clear();
                         currentsize = 0;
                     }
-                    listlist[filecounter].Add( SwapLine(line) );
+                    list.Add( SwapLine(line) );
                     currentsize+=line.Length;
                 }
-                if (listlist[filecounter].Count > 0)
+                if (list.Count > 0)
                 {
                     smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
-                    WriteListToFile( listlist[filecounter], smallfile );
+                    WriteListToFile( list, smallfile );
                     files.Add( smallfile );
                 }
-                listlist[filecounter] = null;
-                listlist = null;
+                list = null;
             }
-            
-            Task.WaitAll( TaskList.ToArray() );
+
+            //Task.WaitAll( TaskList.ToArray() );
 
             GC.Collect();
 
