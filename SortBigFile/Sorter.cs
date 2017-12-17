@@ -10,7 +10,8 @@ namespace SortBigFile
     public class Sorter
     {
         static int _sortSizeMbLimit = 100;
-        static int _linelimit = _sortSizeMbLimit * 10000;
+        static int _smallfilesize = 100*1024*1024;
+        //static int _linelimit = _sortSizeMbLimit * 10000;
                          //10000000
         internal void SortFile( string filename, string sortedfilename )
         {
@@ -48,52 +49,64 @@ namespace SortBigFile
             if (!Directory.Exists( sortareadir ))
                 Directory.CreateDirectory( sortareadir );
             List<string> files = new List<string>();
-            StreamWriter sw;
-            
+            //StreamWriter sw;
+            var TaskList = new List<Task>();
             using (StreamReader sr = new StreamReader( filename ))
             {
-                var sdict = new List<string>( 10000000 );
-                int counter = 0;
+                
+                var listlist = new List<List<string>>( );
+                listlist.Add( new List<string>( 10000000 ) );
+                //int counter = 0;
                 int filecounter = 0;
+                long currentsize = 0;
                 string line;
-                string smallfile = Path.Combine( sortareadir, filecounter.ToString( "000" ) );
+                string smallfile = "";
                 //sw = new StreamWriter( File.Open( smallfile, FileMode.Create ) );
                 while ((line = sr.ReadLine()) != null)
                 {
-                    if (counter == _linelimit)
+                    if (currentsize >= _smallfilesize)
                     {
-                        smallfile = Path.Combine( sortareadir, filecounter.ToString( "000" ) );
-                        sw = new StreamWriter( File.Open( smallfile, FileMode.Create ) );
-                        foreach (string item in sdict)
-                        {
-                            sw.WriteLine( item );
-                        }
-                        sw.Dispose();
+                        smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
+
+                        //WriteListToFile( list, smallfile );
                         filecounter++;
+                        Task task = Task.Run( () => WriteListToFile( listlist[filecounter-1], smallfile ) );
+                        TaskList.Add( task );
+
+                        listlist.Add( new List<string>( 10000000 ) );
                         files.Add( smallfile );
-                        sdict.Clear();
-                        counter = 0;
-                     }
-                    sdict.Add( SwapLine(line) );
-                    counter++;
-                }
-                if (sdict.Count > 0)
-                {
-                    smallfile = Path.Combine( sortareadir, filecounter.ToString( "000" ) );
-                    sw = new StreamWriter( File.Open( smallfile, FileMode.Create ) );
-                    foreach (string item in sdict)
-                    {
-                        sw.WriteLine( item );
+                        currentsize = 0;
                     }
-                    sw.Dispose();
+                    listlist[filecounter].Add( SwapLine(line) );
+                    currentsize+=line.Length;
+                }
+                if (listlist[filecounter].Count > 0)
+                {
+                    smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
+                    WriteListToFile( listlist[filecounter], smallfile );
                     files.Add( smallfile );
                 }
-                sdict = null;
+                listlist[filecounter] = null;
+                listlist = null;
             }
             
+            Task.WaitAll( TaskList.ToArray() );
+
             GC.Collect();
 
             return files;
+        }
+
+        private StreamWriter WriteListToFile( List<string> list, string smallfile )
+        {
+            StreamWriter sw = new StreamWriter( File.Open( smallfile, FileMode.Create ) );
+            foreach (string item in list)
+            {
+                sw.WriteLine( item );
+            }
+            sw.Dispose();
+            list = null;
+            return sw;
         }
 
         private void SortSmallFile( string filename, string sortedfilename, bool swap )
