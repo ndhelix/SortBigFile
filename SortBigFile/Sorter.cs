@@ -10,8 +10,8 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeLimit = 40000000;//10 * 1024 * 1024;
-        static int _smallfilesize = 10 * 1024 * 1024;
+        static int _sortSizeLimit = 4000000;//10 * 1024 * 1024;
+        static int _smallfilesize = 200 * 1024 * 1024;
         static int _mergepool = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
         //10000000
@@ -35,9 +35,36 @@ namespace SortBigFile
             if (filelist.Count <= _mergepool)
             {
                 MergePlain( filelist, outputfilename, recursionlevel );
+                return;
             }
+
+            List<string> mergedfilelist = new List<string>();
+            var TaskList = new List<Task>();
+            var listlist = GetSubLists( filelist, _mergepool );
+            int filecounter = 0;
+            string dir = Path.GetDirectoryName( outputfilename );
+            if (recursionlevel == 0)
+                dir = Path.Combine( dir, "sortarea" );
+            foreach (var list in listlist)
+            {
+                string mergedfile = filecounter.ToString( "0000" ) + "_merged_rec" + recursionlevel;
+                mergedfile = Path.Combine( dir, mergedfile );
+                mergedfilelist.Add( mergedfile );
+                Task task = Task.Run( () => MergeFiles( list, mergedfile, recursionlevel+1 ) );
+                TaskList.Add( task );
+                filecounter++;
+            }
+            Task.WaitAll( TaskList.ToArray() );
+            MergeFiles( mergedfilelist, outputfilename, recursionlevel ) ;
         }
 
+        private List<List<string>> GetSubLists( List<string> filelist, int maxcount )
+        {
+            List<List<string>> listlist = new List<List<string>>();
+            for (int i = 0; i < filelist.Count; i += maxcount)
+                listlist.Add( filelist.GetRange( i, Math.Min( maxcount, filelist.Count - i ) ) );
+            return listlist;
+        }
         private  void MergePlain( List<string> filelist, string outputfilename, int recursionlevel )
         {
             int buffersize = 10000;
@@ -46,8 +73,7 @@ namespace SortBigFile
             //int[] pointers = new int[filelist.Count];
             //string[][] arr = new string[filelist.Count][];
             Queue<string>[] q = new Queue<string>[filelist.Count];
-            var sd = new SortedList<string, int>();
-
+            
             for (int i = 0; i < filelist.Count; i++)
                 q[i] = new Queue<string>();
 
@@ -65,6 +91,8 @@ namespace SortBigFile
                 }
             }
 
+            var sd = new SortedDictionary<string, int>();
+            //var comparelist = new List<string>
             bool queuesareempty = true;
             for (int i = 0; i < q.Length; i++)
                 if (q[i].Count > 0)

@@ -118,8 +118,17 @@ namespace SortBigFile
             return CreateRandomString( rnd );
         }
 
+        string duplicate;
+        int duplicatecandidatepercent = 10;
+        int useduplicatepercent = 10;
+
         string CreateRandomString( int length )
         {
+            int prob = _random.Next( 100 );
+            if (prob <= useduplicatepercent)
+                if (duplicate != null)
+                    return duplicate;
+
             const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 ,.:;-'\"";
             StringBuilder res = new StringBuilder();
             res.Append( valid[_random.Next( 26 )] );
@@ -127,6 +136,11 @@ namespace SortBigFile
             {
                 res.Append( valid[_random.Next( 26 )] );
             }
+
+            prob = _random.Next( 100 );
+            if (prob <= duplicatecandidatepercent)
+                duplicate = res.ToString();
+
             return res.ToString();
         }
 

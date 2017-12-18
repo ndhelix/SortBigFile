@@ -108,7 +108,7 @@
             this.txtLineCount.Name = "txtLineCount";
             this.txtLineCount.Size = new System.Drawing.Size(148, 27);
             this.txtLineCount.TabIndex = 0;
-            this.txtLineCount.Text = "10000000";
+            this.txtLineCount.Text = "1333000";
             // 
             // label1
             // 
