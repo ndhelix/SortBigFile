@@ -43,7 +43,7 @@
             // 
             this.txtFile.Location = new System.Drawing.Point(22, 12);
             this.txtFile.Name = "txtFile";
-            this.txtFile.Size = new System.Drawing.Size(211, 27);
+            this.txtFile.Size = new System.Drawing.Size(241, 27);
             this.txtFile.TabIndex = 0;
             this.txtFile.Text = "E:\\T\\smallfile.txt";
             // 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,16 +10,16 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeMbLimit = 100;
-        static int _smallfilesize = 100*1024*1024;
+        static int _sortSizeLimit = 40000000;//10 * 1024 * 1024;
+        static int _smallfilesize = 10 * 1024 * 1024;
         static int _mergepool = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
         //10000000
         internal void SortFile( string filename, string sortedfilename )
         {
-            long sizeMb = new System.IO.FileInfo( filename ).Length / 1024 / 1024;
+            long sizeMb = new System.IO.FileInfo( filename ).Length;
 
-            if (sizeMb < _sortSizeMbLimit)
+            if (sizeMb < _sortSizeLimit)
             {
                 SortSmallFile( filename, sortedfilename, true );
                 return;
@@ -26,7 +27,7 @@ namespace SortBigFile
 
             List<string> smallfilelist = CreateSmallFiles( filename );
             List<string> smallfilelistsorted = SortSmallFiles( smallfilelist );
-            MergeFiles( smallfilelistsorted, sortedfilename, 0 );
+            MergeFiles( smallfilelistsorted, sortedfilename+"merged", 0 );
         }
 
         private void MergeFiles( List<string> filelist, string outputfilename, int recursionlevel )
@@ -37,19 +38,95 @@ namespace SortBigFile
             }
         }
 
-        private static void MergePlain( List<string> filelist, string outputfilename, int recursionlevel )
+        private  void MergePlain( List<string> filelist, string outputfilename, int recursionlevel )
         {
+            int buffersize = 10000;
+            StreamWriter writer = new StreamWriter( File.Open( outputfilename, FileMode.Create ) );
             StreamReader[] srarr = new StreamReader[filelist.Count];
-            string[] arr = new string[filelist.Count];
+            //int[] pointers = new int[filelist.Count];
+            //string[][] arr = new string[filelist.Count][];
+            Queue<string>[] q = new Queue<string>[filelist.Count];
+            var sd = new SortedList<string, int>();
+
+            for (int i = 0; i < filelist.Count; i++)
+                q[i] = new Queue<string>();
 
             for (int i = 0; i < filelist.Count; i++)
                 srarr[i] = new StreamReader( filelist[i] );
 
             for (int i = 0; i < filelist.Count; i++)
-                arr[i] = srarr[i].ReadLine();
+            {
+                int qlength = 0;
+                while (!srarr[i].EndOfStream && qlength < buffersize)
+                {
+                    string line = srarr[i].ReadLine();
+                    q[i].Enqueue( line );
+                    qlength++;
+                }
+            }
+
+            bool queuesareempty = true;
+            for (int i = 0; i < q.Length; i++)
+                if (q[i].Count > 0)
+                {
+                    queuesareempty = false;
+                    sd[q[i].Dequeue()] = i;
+                }
+            bool unswap = recursionlevel == 0;
+            while (!queuesareempty)
+            {
+                if (!sd.Any())
+                {
+                    for (int i = 0; i < filelist.Count; i++)
+                    {
+                        int qlength = 0;
+                        if (!q[i].Any())
+                            while (!srarr[i].EndOfStream && qlength < buffersize)
+                            {
+                                string line = srarr[i].ReadLine();
+                                q[i].Enqueue( line );
+                                qlength++;
+                            }
+                    }
+
+                    for (int i = 0; i < q.Length; i++)
+                        if (q[i].Count > 0)
+                            sd[q[i].Dequeue()] = i;
+                }
+
+                if (!sd.Any())
+                    break;
+
+                int filenum = sd.First().Value;
+                writer.WriteLine( unswap ? UnSwap(sd.First().Key) : sd.First().Key );
+                sd.Remove( sd.First().Key );
+                if (!q[filenum].Any())
+                {
+                    int qlength = 0;
+                    while (!srarr[filenum].EndOfStream && qlength < buffersize)
+                    {
+                        string line = srarr[filenum].ReadLine();
+                        q[filenum].Enqueue( line );
+                        qlength++;
+                    }
+                }
+
+                if (q[filenum].Any())
+                    sd[q[filenum].Dequeue()] = filenum;
+
+
+                //queuesareempty = true;
+                //for (int i = 0; i < q.Length; i++)
+                //    if (q[i].Count > 0)
+                //    {
+                //        queuesareempty = false;
+                //        break;
+                //    }
+            }
 
             for (int i = 0; i < filelist.Count; i++)
                 srarr[i].Dispose();
+            writer.Dispose();
         }
 
         private List<string> SortSmallFiles( List<string> smallfilelist )
@@ -99,7 +176,7 @@ namespace SortBigFile
                         list.Clear();
                         currentsize = 0;
                     }
-                    list.Add( SwapLine(line) );
+                    list.Add( Swap(line) );
                     currentsize+=line.Length;
                 }
                 if (list.Count > 0)
@@ -141,18 +218,18 @@ namespace SortBigFile
                 while ((line = sr.ReadLine()) != null)
                 {
                     if (swap)
-                        line = SwapLine( line );
+                        line = Swap( line );
                     sdict.Add( line );
                 }
             }
 
-            sdict.Sort();
+            sdict.Sort( StringComparer.Ordinal );
 
             using (var bw = new StreamWriter( File.Open( sortedfilename, FileMode.Create ) ))
             {
                 foreach (string item in sdict)
                 {
-                    bw.WriteLine( swap ? UnSwapLine( item ): item );
+                    bw.WriteLine( swap ? UnSwap( item ): item );
                 }
             }
 
@@ -160,7 +237,7 @@ namespace SortBigFile
             GC.Collect();
         }
 
-        private string UnSwapLine( string item )
+        private string UnSwap( string item )
         {
             var arr = item.Split( '\t' );
             if (arr.Length < 1)
@@ -168,7 +245,7 @@ namespace SortBigFile
             return arr[1].TrimStart( '0' ) + ". " + arr[0];
         }
 
-        private string SwapLine( string line )
+        private string Swap( string line )
         {
             int pos = line.IndexOf( ". " );
             if (pos == -1)

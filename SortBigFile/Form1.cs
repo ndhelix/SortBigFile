@@ -115,16 +115,17 @@ namespace SortBigFile
         private string GetRandomString()
         {
             int rnd = _random.Next( MinTextLength, MaxTextLength );
-            return CreatePassword( rnd );
+            return CreateRandomString( rnd );
         }
 
-        string CreatePassword( int length )
+        string CreateRandomString( int length )
         {
-            const string valid = "abcdefghijklmnprstuvwxyzABCDEFGHIJKLMNPRSTUVWXYZ123456789 ,.:;-'\"";
+            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 ,.:;-'\"";
             StringBuilder res = new StringBuilder();
-            while (0 < length--)
+            res.Append( valid[_random.Next( 26 )] );
+            while (1 < length--)
             {
-                res.Append( valid[_random.Next( valid.Length )] );
+                res.Append( valid[_random.Next( 26 )] );
             }
             return res.ToString();
         }
