@@ -29,60 +29,67 @@
         private void InitializeComponent()
         {
             this.txtFile = new System.Windows.Forms.TextBox();
-            this.btnSort = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.lblStatus = new System.Windows.Forms.Label();
-            this.btnSelectFile = new System.Windows.Forms.Button();
+            this.txtLineCount = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // txtFile
             // 
-            this.txtFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFile.Location = new System.Drawing.Point(188, 12);
+            this.txtFile.Location = new System.Drawing.Point(12, 12);
             this.txtFile.Name = "txtFile";
-            this.txtFile.Size = new System.Drawing.Size(355, 27);
+            this.txtFile.Size = new System.Drawing.Size(286, 27);
             this.txtFile.TabIndex = 0;
             this.txtFile.Text = "D:\\D\\_BIGFILE\\smallfile.txt";
             // 
-            // btnSort
+            // button1
             // 
-            this.btnSort.Location = new System.Drawing.Point(22, 71);
-            this.btnSort.Name = "btnSort";
-            this.btnSort.Size = new System.Drawing.Size(144, 38);
-            this.btnSort.TabIndex = 1;
-            this.btnSort.Text = "Sort file";
-            this.btnSort.UseVisualStyleBackColor = true;
-            this.btnSort.Click += new System.EventHandler(this.btnSort_Click);
+            this.button1.Location = new System.Drawing.Point(16, 98);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(276, 38);
+            this.button1.TabIndex = 1;
+            this.button1.Text = "Create file with random text";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // lblStatus
             // 
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(18, 160);
+            this.lblStatus.Location = new System.Drawing.Point(18, 171);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(57, 20);
             this.lblStatus.TabIndex = 3;
             this.lblStatus.Text = "Status";
             // 
-            // btnSelectFile
+            // txtLineCount
             // 
-            this.btnSelectFile.Location = new System.Drawing.Point(22, 12);
-            this.btnSelectFile.Name = "btnSelectFile";
-            this.btnSelectFile.Size = new System.Drawing.Size(144, 38);
-            this.btnSelectFile.TabIndex = 1;
-            this.btnSelectFile.Text = "Select file...";
-            this.btnSelectFile.UseVisualStyleBackColor = true;
-            this.btnSelectFile.Click += new System.EventHandler(this.btnSelectFile_Click);
+            this.txtLineCount.Location = new System.Drawing.Point(133, 56);
+            this.txtLineCount.Name = "txtLineCount";
+            this.txtLineCount.Size = new System.Drawing.Size(148, 27);
+            this.txtLineCount.TabIndex = 0;
+            this.txtLineCount.Text = "200";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(18, 59);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(109, 20);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "File size, Mb:";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(555, 183);
+            this.ClientSize = new System.Drawing.Size(375, 205);
             this.Controls.Add(this.lblStatus);
-            this.Controls.Add(this.btnSelectFile);
-            this.Controls.Add(this.btnSort);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.txtLineCount);
             this.Controls.Add(this.txtFile);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Margin = new System.Windows.Forms.Padding(4);
@@ -96,9 +103,10 @@
         #endregion
 
         private System.Windows.Forms.TextBox txtFile;
-        private System.Windows.Forms.Button btnSort;
+        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label lblStatus;
-        private System.Windows.Forms.Button btnSelectFile;
+        private System.Windows.Forms.TextBox txtLineCount;
+        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
