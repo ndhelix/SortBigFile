@@ -26,13 +26,13 @@ namespace SortBigFile
                 return;
             }
             
-            List<string> smallfilelist = CreateSmallFiles( filename );
+            List<string> smallfilelistsorted = CreateAndSortSmallFiles( filename );
             File.AppendAllText( "sorter.log", "CreateSmallFiles took " + (DateTime.Now - start).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
             start = DateTime.Now;
 
-            List<string> smallfilelistsorted = SortSmallFiles( smallfilelist );
-            File.AppendAllText( "sorter.log", "SortSmallFiles took " + ( DateTime.Now - start ).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
-            start = DateTime.Now;
+            //List<string> smallfilelistsorted = SortSmallFiles( smallfilelist );
+            //File.AppendAllText( "sorter.log", "SortSmallFiles took " + ( DateTime.Now - start ).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
+            //start = DateTime.Now;
             MergeFiles( smallfilelistsorted, sortedfilename+"merged", 0, true );
             File.AppendAllText( "sorter.log", "MergeFiles took " + ( DateTime.Now - start ).ToString( @"hh\:mm\:ss" )+Environment.NewLine );
         }
@@ -99,8 +99,6 @@ namespace SortBigFile
             }
 
             var sd = new SortedDictionary<string, int>();
-            //var comparelist = new List<string>
-            bool queuesareempty = true;
             for (int i = 0; i < q.Length; i++)
                 if (q[i].Count > 0)
                 {
@@ -108,7 +106,7 @@ namespace SortBigFile
                     sd.AddAnyway( q[i].Dequeue(), i);
                 }
             //bool unswap = recursionlevel == 0;
-            while (!queuesareempty)
+            while (true)
             {
                 if (!sd.Any())
                 {
@@ -182,14 +180,14 @@ namespace SortBigFile
             return sortedfilelist;
         }
 
-        private List<string> CreateSmallFiles( string filename )
+        private List<string> CreateAndSortSmallFiles( string filename )
         {
             string sortareadir = Path.Combine( Path.GetDirectoryName( filename ), "sortarea" );
             if (!Directory.Exists( sortareadir ))
                 Directory.CreateDirectory( sortareadir );
             List<string> files = new List<string>();
             //StreamWriter sw;
-            //var TaskList = new List<Task>();
+            var TaskList = new List<Task>();
             using (StreamReader sr = new StreamReader( filename ))
             {
                 var list = new List<string>( 10000000 );
@@ -205,12 +203,14 @@ namespace SortBigFile
                     {
                         smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
 
-                         WriteListToFile( list, smallfile );
-                        //Task task = Task.Run( () => WriteListToFile( list, smallfile ) );
-                        //TaskList.Add( task );
+                        WriteListToFile( list, smallfile );
+
+                        string sortedfile = smallfile + "_sorted";
+                        Task task = Task.Run( () => SortSmallFile( smallfile, sortedfile, false ) );
+                        TaskList.Add( task );
+                        files.Add( sortedfile );
 
                         filecounter++;
-                        files.Add( smallfile );
                         list.Clear();
                         currentsize = 0;
                     }
@@ -221,12 +221,15 @@ namespace SortBigFile
                 {
                     smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
                     WriteListToFile( list, smallfile );
-                    files.Add( smallfile );
+                    string sortedfile = smallfile + "_sorted";
+                    Task task = Task.Run( () => SortSmallFile( smallfile, sortedfile, false ) );
+                    TaskList.Add( task );
+                    files.Add( sortedfile );
                 }
                 list = null;
             }
 
-            //Task.WaitAll( TaskList.ToArray() );
+            Task.WaitAll( TaskList.ToArray() );
 
             GC.Collect();
 
