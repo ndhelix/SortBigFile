@@ -10,8 +10,8 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeLimit = 4000000;//10 * 1024 * 1024;
-        static int _smallfilesize = 200 * 1024 * 1024;
+        static int _sortSizeLimit = 40000;//10 * 1024 * 1024;
+        static int _smallfilesize = 100000;// * 1024 * 1024;
         static int _mergepool = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
         //10000000
@@ -126,7 +126,8 @@ namespace SortBigFile
                     break;
 
                 int filenum = sd.First().Value;
-                writer.WriteLine( unswap ? UnSwap(sd.First().Key) : sd.First().Key );
+                string row = sd.First().Key.TrimEnd('\t');
+                writer.WriteLine( unswap ? UnSwap( row ) : row );
                 sd.Remove( sd.First().Key );
                 if (!q[filenum].Any())
                 {
@@ -140,8 +141,14 @@ namespace SortBigFile
                 }
 
                 if (q[filenum].Any())
-                    sd[q[filenum].Dequeue()] = filenum;
-
+                {
+                    string key = q[filenum].Dequeue();
+                    //sd[key] = filenum;
+                    if (sd.ContainsKey( key ))
+                        sd.Add( key+'\t', filenum );
+                    else
+                        sd.Add( key, filenum );
+                }
 
                 //queuesareempty = true;
                 //for (int i = 0; i < q.Length; i++)

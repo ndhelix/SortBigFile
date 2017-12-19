@@ -104,20 +104,20 @@
             // 
             // txtLineCount
             // 
-            this.txtLineCount.Location = new System.Drawing.Point(367, 12);
+            this.txtLineCount.Location = new System.Drawing.Point(384, 12);
             this.txtLineCount.Name = "txtLineCount";
             this.txtLineCount.Size = new System.Drawing.Size(148, 27);
             this.txtLineCount.TabIndex = 0;
-            this.txtLineCount.Text = "1333000";
+            this.txtLineCount.Text = "200";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(269, 15);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(92, 20);
+            this.label1.Size = new System.Drawing.Size(109, 20);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Line count:";
+            this.label1.Text = "File size, Mb:";
             // 
             // Form1
             // 

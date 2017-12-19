@@ -30,58 +30,23 @@ namespace SortBigFile
             lblStatus.Text = "Generating...";
             Application.DoEvents();
             string filename = txtFile.Text;
-            int linecount = int.Parse( txtLineCount.Text );
+            long filesize = long.Parse( txtLineCount.Text )*1024*1024;
             int lineblocksize = 10000;
             DateTime start = DateTime.Now;
             object locker = new object();
-            //Parallel.For( 0, linecount / lineblocksize + 1, index =>
-            //    {
-            //        string block = GetRandomBlock( lineblocksize  );
-
-            //        new Thread( () =>
-            //        {
-
-            //            lock (locker)
-            //            {
-            //                File.AppendAllText( filename, block );
-            //            }
-            //        } ).Start();
-            //        //
-            //        //lock (o)
-            //        //{
-            //        //  bw.WriteLine( block );
-            //        //}
-            //    } );
-
-
-            //var TaskList = new List<Task<string>>();
-            //for (int i = 0; i < linecount; i += lineblocksize)
-            //{
-            //    int rowcount = Math.Min( linecount - i, lineblocksize );
-            //    Task<string> task = Task.Run( async () => await GetRandomBlockAsync( rowcount ) );
-            //    TaskList.Add( task );
-            //}
-
-            //Task.WhenAll( TaskList.ToArray() );
-
-            //using (var bw = new StreamWriter( File.Open( filename, FileMode.Create ) ))
-            //{
-            //    foreach (var task in TaskList)
-            //    {
-            //        bw.WriteLine( task.Result );
-            //    }
-            //}
+            long size = 0;
 
             using (var bw = new StreamWriter( File.Open( filename, FileMode.Create ) ))
             {
-                for (int i = 0; i < linecount; i += lineblocksize)
+                while (size < filesize)
                 {
-                    string block = GetRandomBlock( Math.Min( linecount - i, lineblocksize ) );
+                    string block = GetRandomBlock( lineblocksize );
                     bw.Write( block );
+                    size += block.Length;
                 }
             }
             var timepass = DateTime.Now - start;
-            lblStatus.Text = string.Format("{0} lines generated in {1}. ", linecount, timepass.ToString( @"hh\:mm\:ss" ) );
+            lblStatus.Text = string.Format("{0} Mb generated in {1}. ", txtLineCount.Text, timepass.ToString( @"hh\:mm\:ss" ) );
         }
 
         private async Task<string> GetRandomBlockAsync( int linecount )
