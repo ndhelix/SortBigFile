@@ -45,7 +45,7 @@
             this.txtFile.Name = "txtFile";
             this.txtFile.Size = new System.Drawing.Size(241, 27);
             this.txtFile.TabIndex = 0;
-            this.txtFile.Text = "E:\\T\\smallfile.txt";
+            this.txtFile.Text = "D:\\D\\_BIGFILE\\smallfile.txt";
             // 
             // button1
             // 

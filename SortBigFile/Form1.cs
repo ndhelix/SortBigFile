@@ -15,7 +15,7 @@ namespace SortBigFile
     public partial class Form1 : Form
     {
         const int MinTextLength = 3;
-        const int MaxTextLength = 20;
+        const int MaxTextLength = 100;
 
         public Form1()
         {
@@ -94,12 +94,18 @@ namespace SortBigFile
                 if (duplicate != null)
                     return duplicate;
 
+            //if (prob==20)
+              //  return "KKKKKKKKKKKK";
+
             const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 ,.:;-'\"";
             StringBuilder res = new StringBuilder();
-            res.Append( valid[_random.Next( 26 )] );
-            while (1 < length--)
+            
+            for (int i =0; i < length; i++)
             {
-                res.Append( valid[_random.Next( 26 )] );
+                if (i<16)
+                    res.Append( valid[_random.Next( 26 )] ); // пусть сначала идут буквы, так удобнее
+                else
+                    res.Append( valid[_random.Next( valid.Length )] );
             }
 
             prob = _random.Next( 100 );

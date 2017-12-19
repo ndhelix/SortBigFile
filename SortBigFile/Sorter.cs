@@ -10,8 +10,8 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeLimit = 40000;//10 * 1024 * 1024;
-        static int _smallfilesize = 100000;// * 1024 * 1024;
+        static int _sortSizeLimit = 400000;//10 * 1024 * 1024;
+        static int _smallfilesize = 700000;// * 1024 * 1024;
         static int _mergepool = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
         //10000000
@@ -27,14 +27,14 @@ namespace SortBigFile
 
             List<string> smallfilelist = CreateSmallFiles( filename );
             List<string> smallfilelistsorted = SortSmallFiles( smallfilelist );
-            MergeFiles( smallfilelistsorted, sortedfilename+"merged", 0 );
+            MergeFiles( smallfilelistsorted, sortedfilename+"merged", 0, true );
         }
 
-        private void MergeFiles( List<string> filelist, string outputfilename, int recursionlevel )
+        private void MergeFiles( List<string> filelist, string outputfilename, int recursionlevel, bool isroot = false)
         {
             if (filelist.Count <= _mergepool)
             {
-                MergePlain( filelist, outputfilename, recursionlevel );
+                MergePlain( filelist, outputfilename, isroot );
                 return;
             }
 
@@ -43,19 +43,19 @@ namespace SortBigFile
             var listlist = GetSubLists( filelist, _mergepool );
             int filecounter = 0;
             string dir = Path.GetDirectoryName( outputfilename );
-            if (recursionlevel == 0)
-                dir = Path.Combine( dir, "sortarea" );
+            //if (recursionlevel == 0)
+            dir = Path.Combine( dir, "sortarea" );
             foreach (var list in listlist)
             {
                 string mergedfile = filecounter.ToString( "0000" ) + "_merged_rec" + recursionlevel;
                 mergedfile = Path.Combine( dir, mergedfile );
                 mergedfilelist.Add( mergedfile );
-                Task task = Task.Run( () => MergeFiles( list, mergedfile, recursionlevel+1 ) );
+                Task task = Task.Run( () => MergeFiles( list, mergedfile, recursionlevel+2 ) );
                 TaskList.Add( task );
                 filecounter++;
             }
             Task.WaitAll( TaskList.ToArray() );
-            MergeFiles( mergedfilelist, outputfilename, recursionlevel ) ;
+            MergeFiles( mergedfilelist, outputfilename, recursionlevel+1, isroot ) ;
         }
 
         private List<List<string>> GetSubLists( List<string> filelist, int maxcount )
@@ -65,7 +65,7 @@ namespace SortBigFile
                 listlist.Add( filelist.GetRange( i, Math.Min( maxcount, filelist.Count - i ) ) );
             return listlist;
         }
-        private  void MergePlain( List<string> filelist, string outputfilename, int recursionlevel )
+        private  void MergePlain( List<string> filelist, string outputfilename, bool unswap )
         {
             int buffersize = 10000;
             StreamWriter writer = new StreamWriter( File.Open( outputfilename, FileMode.Create ) );
@@ -98,9 +98,9 @@ namespace SortBigFile
                 if (q[i].Count > 0)
                 {
                     queuesareempty = false;
-                    sd[q[i].Dequeue()] = i;
+                    sd.AddAnyway( q[i].Dequeue(), i);
                 }
-            bool unswap = recursionlevel == 0;
+            //bool unswap = recursionlevel == 0;
             while (!queuesareempty)
             {
                 if (!sd.Any())
@@ -119,7 +119,7 @@ namespace SortBigFile
 
                     for (int i = 0; i < q.Length; i++)
                         if (q[i].Count > 0)
-                            sd[q[i].Dequeue()] = i;
+                            sd.AddAnyway( q[i].Dequeue(), i);
                 }
 
                 if (!sd.Any())
@@ -143,11 +143,7 @@ namespace SortBigFile
                 if (q[filenum].Any())
                 {
                     string key = q[filenum].Dequeue();
-                    //sd[key] = filenum;
-                    if (sd.ContainsKey( key ))
-                        sd.Add( key+'\t', filenum );
-                    else
-                        sd.Add( key, filenum );
+                    sd.AddAnyway( key, filenum );
                 }
 
                 //queuesareempty = true;
@@ -163,6 +159,7 @@ namespace SortBigFile
                 srarr[i].Dispose();
             writer.Dispose();
         }
+
 
         private List<string> SortSmallFiles( List<string> smallfilelist )
         {
