@@ -11,7 +11,7 @@ namespace SortBigFile
     public class Sorter
     {
         static int _sortSizeLimit = 400000;//10 * 1024 * 1024;
-        static int _smallfilesize = 10 * 1024 * 1024;
+        static int _smallfilesize = 400 * 1024 * 1024;
         static int _mergepool = 10;
         static int _concurrentsortthreadcount = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
