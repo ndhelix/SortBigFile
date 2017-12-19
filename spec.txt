@@ -1,7 +1,5 @@
 TODO: 
 	Delete temp folder
-	Generator shall make duplicates
-	var sd = new SortedDictionary<string, int>(); — does not allow duplicates
 
 На входе есть большой текстовый файл, где каждая строка имеет вид Number. String
 Например:
@@ -54,3 +52,9 @@ TODO:
 
 1 min 9 sec
 32 sec
+01:45
+25 Gb generated in 20 min
+
+CreateSmallFiles took 00:00:10
+SortSmallFiles   took 00:00:17
+MergeFiles       took 00:00:28

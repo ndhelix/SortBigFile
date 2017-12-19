@@ -137,5 +137,15 @@ namespace SortBigFile
             var timepass = DateTime.Now - start;
             lblStatus.Text = string.Format( "{0:0.0} GB file sorted in {1}. ", (decimal)size/1024/1024/1024, timepass.ToString( @"hh\:mm\:ss" ) );
         }
+
+        private void btnSelectFile_Click( object sender, EventArgs e )
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                 txtFile.Text = openFileDialog1.FileName;
+            }
+
+
+        }
     }
 }

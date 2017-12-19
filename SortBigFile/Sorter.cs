@@ -11,8 +11,9 @@ namespace SortBigFile
     public class Sorter
     {
         static int _sortSizeLimit = 400000;//10 * 1024 * 1024;
-        static int _smallfilesize = 4 * 1024 * 1024;
+        static int _smallfilesize = 10 * 1024 * 1024;
         static int _mergepool = 10;
+        static int _concurrentsortthreadcount = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
         //10000000
         internal void SortFile( string filename, string sortedfilename )
@@ -152,13 +153,6 @@ namespace SortBigFile
                     sd.AddAnyway( key, filenum );
                 }
 
-                //queuesareempty = true;
-                //for (int i = 0; i < q.Length; i++)
-                //    if (q[i].Count > 0)
-                //    {
-                //        queuesareempty = false;
-                //        break;
-                //    }
             }
 
             for (int i = 0; i < filelist.Count; i++)
@@ -170,15 +164,21 @@ namespace SortBigFile
         private List<string> SortSmallFiles( List<string> smallfilelist )
         {
             List<string> sortedfilelist = new List<string>();
-            var TaskList = new List<Task>();
-            foreach (string file in smallfilelist)
+
+            var listlist = GetSubLists( smallfilelist, _concurrentsortthreadcount );
+
+            foreach (var list in listlist)
             {
-                string sortedfile = file + "_sorted";
-                sortedfilelist.Add( sortedfile );
-                Task task = Task.Run( () => SortSmallFile( file, sortedfile, false ) );
-                TaskList.Add( task );
+                var TaskList = new List<Task>();
+                foreach (string file in list)
+                {
+                    string sortedfile = file + "_sorted";
+                    sortedfilelist.Add( sortedfile );
+                    Task task = Task.Run( () => SortSmallFile( file, sortedfile, false ) );
+                    TaskList.Add( task );
+                }
+                Task.WaitAll( TaskList.ToArray() );
             }
-            Task.WaitAll( TaskList.ToArray() );
             return sortedfilelist;
         }
 
@@ -233,7 +233,7 @@ namespace SortBigFile
             return files;
         }
 
-        private StreamWriter WriteListToFile( List<string> list, string smallfile )
+        private void WriteListToFile( List<string> list, string smallfile )
         {
             StreamWriter sw = new StreamWriter( File.Open( smallfile, FileMode.Create ) );
             foreach (string item in list)
@@ -242,7 +242,6 @@ namespace SortBigFile
             }
             sw.Dispose();
             list = null;
-            return sw;
         }
 
         private void SortSmallFile( string filename, string sortedfilename, bool swap )
