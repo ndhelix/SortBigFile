@@ -11,23 +11,29 @@ namespace SortBigFile
     public class Sorter
     {
         static int _sortSizeLimit = 400000;//10 * 1024 * 1024;
-        static int _smallfilesize = 700000;// * 1024 * 1024;
+        static int _smallfilesize = 4 * 1024 * 1024;
         static int _mergepool = 10;
         //static int _linelimit = _sortSizeMbLimit * 10000;
         //10000000
         internal void SortFile( string filename, string sortedfilename )
         {
             long sizeMb = new System.IO.FileInfo( filename ).Length;
-
+            DateTime start = DateTime.Now;
             if (sizeMb < _sortSizeLimit)
             {
                 SortSmallFile( filename, sortedfilename, true );
                 return;
             }
-
+            
             List<string> smallfilelist = CreateSmallFiles( filename );
+            File.AppendAllText( "sorter.log", "CreateSmallFiles took " + (DateTime.Now - start).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
+            start = DateTime.Now;
+
             List<string> smallfilelistsorted = SortSmallFiles( smallfilelist );
+            File.AppendAllText( "sorter.log", "SortSmallFiles took " + ( DateTime.Now - start ).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
+            start = DateTime.Now;
             MergeFiles( smallfilelistsorted, sortedfilename+"merged", 0, true );
+            File.AppendAllText( "sorter.log", "MergeFiles took " + ( DateTime.Now - start ).ToString( @"hh\:mm\:ss" )+Environment.NewLine );
         }
 
         private void MergeFiles( List<string> filelist, string outputfilename, int recursionlevel, bool isroot = false)

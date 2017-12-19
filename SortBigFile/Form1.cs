@@ -15,8 +15,8 @@ namespace SortBigFile
     public partial class Form1 : Form
     {
         const int MinTextLength = 3;
-        const int MaxTextLength = 100;
-
+        const int MaxTextLength = 400;
+        const int MaxInt = 1000000;
         public Form1()
         {
             InitializeComponent();
@@ -71,7 +71,7 @@ namespace SortBigFile
         private string GetRandomLine()
         {
             //var random = new Random( new DateTime().Millisecond );
-            int rnd = _random.Next( 100000 );
+            int rnd = _random.Next( MaxInt );
             string rndstring = GetRandomString();
             //string rndstring = "0123456123123123123";
             return string.Format( "{0}. {1}", rnd, rndstring );
