@@ -22,7 +22,7 @@ namespace SortBigFile
             InitializeComponent();
         }
 
-        static Random _random = new Random();
+        Random _random = new Random();
 
         private void button1_Click( object sender, EventArgs e )
         {
@@ -98,9 +98,13 @@ namespace SortBigFile
 
             const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 123456789,.:;-'\"";
             StringBuilder res = new StringBuilder();
+
+            //byte[] bytearray = new byte[length/4 + 1];
+            //_random.NextBytes( bytearray );
             
             for (int i =0; i < length; i++)
             {
+                //res.Append( valid[bytearray[i/4] % 64] );
                 if (i<16)
                     res.Append( valid[_random.Next( 52 )] ); // пусть сначала идут буквы, так удобнее
                 else
