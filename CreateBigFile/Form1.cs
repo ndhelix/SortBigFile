@@ -14,9 +14,9 @@ namespace SortBigFile
 {
     public partial class Form1 : Form
     {
-        const int MinTextLength = 3;
-        const int MaxTextLength = 400;
-        const int MaxInt = 1000000;
+        int _minTextLength = 0;
+        int _maxTextLength = 0;
+        int _maxInt = 0;
         public Form1()
         {
             InitializeComponent();
@@ -31,9 +31,13 @@ namespace SortBigFile
             Application.DoEvents();
             string filename = txtFile.Text;
             long filesize = long.Parse( txtLineCount.Text )*1024*1024;
+
+            _maxInt = int.Parse( txtMaxNum.Text );
+            _minTextLength = int.Parse( txtMinLen.Text );
+            _maxTextLength = int.Parse( txtMaxLen.Text );
+            
             int lineblocksize = 10000;
             DateTime start = DateTime.Now;
-            object locker = new object();
             long size = 0;
 
             using (var bw = new StreamWriter( File.Open( filename, FileMode.Create ) ))
@@ -53,7 +57,7 @@ namespace SortBigFile
         private string GetRandomBlock( int linecount )
         {
             int averagenumberlength = 10;
-            int averagelinelength = (MaxTextLength + MinTextLength)/2 + averagenumberlength + 2;
+            int averagelinelength = (_maxTextLength + _minTextLength)/2 + averagenumberlength + 2;
             StringBuilder sb = new StringBuilder( averagelinelength*linecount );
             for (int i = 0; i < linecount; i++)
                 sb.Append( GetRandomLine() + Environment.NewLine ) ;
@@ -66,7 +70,7 @@ namespace SortBigFile
         private string GetRandomLine()
         {
             //var random = new Random( new DateTime().Millisecond );
-            int rnd = _random.Next( MaxInt );
+            int rnd = _random.Next( _maxInt );
             string rndstring = GetRandomString();
             //string rndstring = "0123456123123123123";
             return string.Format( "{0}. {1}", rnd, rndstring );
@@ -74,7 +78,7 @@ namespace SortBigFile
 
         private string GetRandomString()
         {
-            int rnd = _random.Next( MinTextLength, MaxTextLength );
+            int rnd = _random.Next( _minTextLength, _maxTextLength );
             return CreateRandomString( rnd );
         }
 
@@ -92,13 +96,13 @@ namespace SortBigFile
             //if (prob==20)
               //  return "KKKKKKKKKKKK";
 
-            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 ,.:;-'\"";
+            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 123456789,.:;-'\"";
             StringBuilder res = new StringBuilder();
             
             for (int i =0; i < length; i++)
             {
                 if (i<16)
-                    res.Append( valid[_random.Next( 26 )] ); // пусть сначала идут буквы, так удобнее
+                    res.Append( valid[_random.Next( 52 )] ); // пусть сначала идут буквы, так удобнее
                 else
                     res.Append( valid[_random.Next( valid.Length )] );
             }
@@ -110,6 +114,9 @@ namespace SortBigFile
             return res.ToString();
         }
 
-        
+        private void txtLineCount_KeyPress( object sender, KeyPressEventArgs e )
+        {
+            e.Handled = !char.IsDigit( e.KeyChar ) && !char.IsControl( e.KeyChar );
+        }
     }
 }
