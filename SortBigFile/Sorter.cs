@@ -10,22 +10,27 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeLimit = 400000;//10 * 1024 * 1024;
-        static int _smallfilesize = 400 * 1024 * 1024;
+        static int _sortSizeLimit = 400 * 1024 * 1024;
         static int _mergepool = 10;
         static int _concurrentsortthreadcount = 10;
+        static int _smallfilesize = 0;
         //static int _linelimit = _sortSizeMbLimit * 10000;
         //10000000
         internal void SortFile( string filename, string sortedfilename )
         {
-            long sizeMb = new System.IO.FileInfo( filename ).Length;
+            long size = new System.IO.FileInfo( filename ).Length;
             DateTime start = DateTime.Now;
-            if (sizeMb < _sortSizeLimit)
+            if (size < _sortSizeLimit)
             {
                 SortSmallFile( filename, sortedfilename, true );
                 return;
             }
-            
+
+            // this block was used to test on small files
+            _smallfilesize = _sortSizeLimit / 2;
+            if (_smallfilesize < size/500)
+                _smallfilesize = (int)(size/200);
+
             List<string> smallfilelistsorted = CreateAndSortSmallFiles( filename );
             File.AppendAllText( "sorter.log", "CreateSmallFiles took " + (DateTime.Now - start).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
             start = DateTime.Now;
@@ -74,11 +79,9 @@ namespace SortBigFile
         }
         private  void MergePlain( List<string> filelist, string outputfilename, bool unswap )
         {
-            int buffersize = 10000;
+            int buffersize = 50000;
             StreamWriter writer = new StreamWriter( File.Open( outputfilename, FileMode.Create ) );
             StreamReader[] srarr = new StreamReader[filelist.Count];
-            //int[] pointers = new int[filelist.Count];
-            //string[][] arr = new string[filelist.Count][];
             Queue<string>[] q = new Queue<string>[filelist.Count];
             
             for (int i = 0; i < filelist.Count; i++)
@@ -101,10 +104,8 @@ namespace SortBigFile
             var sd = new SortedDictionary<string, int>();
             for (int i = 0; i < q.Length; i++)
                 if (q[i].Count > 0)
-                {
                     sd.AddAnyway( q[i].Dequeue(), i);
-                }
-            //bool unswap = recursionlevel == 0;
+
             if (sd.Any())
             while (true)
             {
@@ -155,6 +156,11 @@ namespace SortBigFile
 
             for (int i = 0; i < filelist.Count; i++)
                 srarr[i].Dispose();
+
+            foreach(string filename in filelist)
+                if (File.Exists( filename ))
+                    File.Delete( filename );
+
             writer.Dispose();
         }
 
@@ -188,6 +194,7 @@ namespace SortBigFile
             List<string> files = new List<string>();
             //StreamWriter sw;
             var TaskList = new List<Task>();
+            
             using (StreamReader sr = new StreamReader( filename ))
             {
                 var list = new List<string>( 10000000 );
@@ -197,6 +204,7 @@ namespace SortBigFile
                 string line;
                 string smallfile = "";
                 //sw = new StreamWriter( File.Open( smallfile, FileMode.Create ) );
+                
                 while ((line = sr.ReadLine()) != null)
                 {
                     if (currentsize >= _smallfilesize)
@@ -249,7 +257,7 @@ namespace SortBigFile
 
         private void SortSmallFile( string filename, string sortedfilename, bool swap )
         {
-            var sdict = new List<string>( 10000000 );
+            var list = new List<string>( 10000000 );
 
             using (StreamReader sr = new StreamReader( filename ))
             {
@@ -259,21 +267,22 @@ namespace SortBigFile
                 {
                     if (swap)
                         line = Swap( line );
-                    sdict.Add( line );
+                    list.Add( line );
                 }
             }
 
-            sdict.Sort( StringComparer.Ordinal );
+            list.Sort( StringComparer.Ordinal );
 
             using (var bw = new StreamWriter( File.Open( sortedfilename, FileMode.Create ) ))
             {
-                foreach (string item in sdict)
+                foreach (string item in list)
                 {
                     bw.WriteLine( swap ? UnSwap( item ): item );
                 }
             }
-
-            sdict = null;
+            if (File.Exists( filename ))
+                File.Delete( filename );
+            list = null;
             GC.Collect();
         }
 
@@ -282,7 +291,10 @@ namespace SortBigFile
             var arr = item.Split( '\t' );
             if (arr.Length < 1)
                 return item;
-            return arr[1].TrimStart( '0' ) + ". " + arr[0];
+            string num = arr[1].TrimStart( '0' );
+            if (num == "")
+                num = "0";
+            return num + ". " + arr[0];
         }
 
         private string Swap( string line )
