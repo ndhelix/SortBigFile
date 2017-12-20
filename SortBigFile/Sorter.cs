@@ -102,10 +102,10 @@ namespace SortBigFile
             for (int i = 0; i < q.Length; i++)
                 if (q[i].Count > 0)
                 {
-                    queuesareempty = false;
                     sd.AddAnyway( q[i].Dequeue(), i);
                 }
             //bool unswap = recursionlevel == 0;
+            if (sd.Any())
             while (true)
             {
                 if (!sd.Any())
