@@ -39,7 +39,7 @@ namespace SortBigFile
             int lineblocksize = 10000;
             DateTime start = DateTime.Now;
             long size = 0;
-
+            long counter = 0;
             using (var bw = new StreamWriter( File.Open( filename, FileMode.Create ) ))
             {
                 while (size < filesize)
@@ -47,6 +47,12 @@ namespace SortBigFile
                     string block = GetRandomBlock( lineblocksize );
                     bw.Write( block );
                     size += block.Length;
+                    counter++;
+                    if ((counter * lineblocksize) % 100000 == 0)
+                    {
+                        lblStatus.Text = "MB generated for now: " + size/1024/1204 + "...";
+                        Application.DoEvents();
+                    }
                 }
             }
             var timepass = DateTime.Now - start;

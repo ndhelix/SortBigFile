@@ -57,7 +57,7 @@
             this.button1.Location = new System.Drawing.Point(12, 203);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(276, 38);
-            this.button1.TabIndex = 1;
+            this.button1.TabIndex = 100;
             this.button1.Text = "Create file with random text";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
@@ -80,7 +80,7 @@
             this.txtLineCount.MaxLength = 6;
             this.txtLineCount.Name = "txtLineCount";
             this.txtLineCount.Size = new System.Drawing.Size(138, 27);
-            this.txtLineCount.TabIndex = 0;
+            this.txtLineCount.TabIndex = 10;
             this.txtLineCount.Text = "100";
             this.txtLineCount.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtLineCount_KeyPress);
             // 
@@ -101,7 +101,7 @@
             this.txtMaxNum.MaxLength = 10;
             this.txtMaxNum.Name = "txtMaxNum";
             this.txtMaxNum.Size = new System.Drawing.Size(138, 27);
-            this.txtMaxNum.TabIndex = 0;
+            this.txtMaxNum.TabIndex = 20;
             this.txtMaxNum.Text = "1000000";
             this.txtMaxNum.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtLineCount_KeyPress);
             // 
@@ -122,7 +122,7 @@
             this.txtMinLen.MaxLength = 4;
             this.txtMinLen.Name = "txtMinLen";
             this.txtMinLen.Size = new System.Drawing.Size(138, 27);
-            this.txtMinLen.TabIndex = 0;
+            this.txtMinLen.TabIndex = 30;
             this.txtMinLen.Text = "5";
             this.txtMinLen.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtLineCount_KeyPress);
             // 
@@ -134,7 +134,7 @@
             this.txtMaxLen.MaxLength = 4;
             this.txtMaxLen.Name = "txtMaxLen";
             this.txtMaxLen.Size = new System.Drawing.Size(138, 27);
-            this.txtMaxLen.TabIndex = 0;
+            this.txtMaxLen.TabIndex = 40;
             this.txtMaxLen.Text = "100";
             this.txtMaxLen.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtLineCount_KeyPress);
             // 

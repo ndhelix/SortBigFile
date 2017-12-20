@@ -10,8 +10,8 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeLimit = 400 * 1024 * 1024;
-        static int _mergepool = 10;
+        static int _sortSizeLimit = 4 * 1024 * 1024;
+        static int _mergepool = 25;
         static int _concurrentsortthreadcount = 10;
         static int _smallfilesize = 0;
         //static int _linelimit = _sortSizeMbLimit * 10000;
@@ -289,7 +289,7 @@ namespace SortBigFile
         private string UnSwap( string item )
         {
             var arr = item.Split( '\t' );
-            if (arr.Length < 1)
+            if (arr.Length < 2)
                 return item;
             string num = arr[1].TrimStart( '0' );
             if (num == "")
@@ -303,7 +303,8 @@ namespace SortBigFile
             if (pos == -1)
                 return line;
             string strnum = line.Substring( 0, pos );
-            int num = int.Parse( strnum );
+            int num;
+            int.TryParse( strnum, out num );
             string ret = line.Substring( pos + 2 ) + "\t" + num.ToString( "0000000000" );
             return ret;
         }
