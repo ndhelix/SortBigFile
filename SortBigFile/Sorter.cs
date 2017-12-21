@@ -10,7 +10,7 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeLimit = 4 * 1024 * 1024;
+        static int _sortSizeLimit = 2 * 1024 * 1024;
         static int _mergepool = 25;
         static int _concurrentsortthreadcount = 10;
         static int _smallfilesize = 0;
@@ -194,7 +194,8 @@ namespace SortBigFile
             List<string> files = new List<string>();
             //StreamWriter sw;
             var TaskList = new List<Task>();
-            
+            Queue<string> q = new Queue<string>();
+
             using (StreamReader sr = new StreamReader( filename ))
             {
                 var list = new List<string>( 10000000 );
@@ -204,19 +205,23 @@ namespace SortBigFile
                 string line;
                 string smallfile = "";
                 //sw = new StreamWriter( File.Open( smallfile, FileMode.Create ) );
-                
                 while ((line = sr.ReadLine()) != null)
                 {
                     if (currentsize >= _smallfilesize)
                     {
                         smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
-
+                        q.Enqueue( smallfile );
                         WriteListToFile( list, smallfile );
 
-                        string sortedfile = smallfile + "_sorted";
-                        Task task = Task.Run( () => SortSmallFile( smallfile, sortedfile, false ) );
-                        TaskList.Add( task );
-                        files.Add( sortedfile );
+                        if (q.Count >= 8)
+                            while(q.Any())
+                            {
+                                string file = q.Dequeue();
+                                string sortedfile = file + "_sorted";
+                                Task task = Task.Run( () => SortSmallFile( file, sortedfile, false ) );
+                                TaskList.Add( task );
+                                files.Add( sortedfile );    
+                            }
 
                         filecounter++;
                         list.Clear();
@@ -229,12 +234,22 @@ namespace SortBigFile
                 {
                     smallfile = Path.Combine( sortareadir, filecounter.ToString( "0000" ) );
                     WriteListToFile( list, smallfile );
-                    string sortedfile = smallfile + "_sorted";
-                    Task task = Task.Run( () => SortSmallFile( smallfile, sortedfile, false ) );
-                    TaskList.Add( task );
-                    files.Add( sortedfile );
+                    q.Enqueue( smallfile );
+                    //string sortedfile = smallfile + "_sorted";
+                    //Task task = Task.Run( () => SortSmallFile( smallfile, sortedfile, false ) );
+                    //TaskList.Add( task );
+                    //files.Add( sortedfile );
                 }
                 list = null;
+            }
+
+            while (q.Any())
+            {
+                string file = q.Dequeue() ;
+                string sortedfile = file + "_sorted";
+                Task task = Task.Run( () => SortSmallFile( file, sortedfile, false ) );
+                TaskList.Add( task );
+                files.Add( sortedfile );
             }
 
             Task.WaitAll( TaskList.ToArray() );
