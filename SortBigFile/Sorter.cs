@@ -10,7 +10,7 @@ namespace SortBigFile
 {
     public class Sorter
     {
-        static int _sortSizeLimit = 2 * 1024 * 1024;
+        static int _sortSizeLimit = 600 * 1024 * 1024;
         static int _mergepool = 25;
         static int _concurrentsortthreadcount = 10;
         static int _smallfilesize = 0;
@@ -192,10 +192,12 @@ namespace SortBigFile
             if (!Directory.Exists( sortareadir ))
                 Directory.CreateDirectory( sortareadir );
             List<string> files = new List<string>();
+            List<string> mergedfiles = new List<string>();
             //StreamWriter sw;
             var TaskList = new List<Task>();
+            var TaskListMerge = new List<Task>();
             int filecounter = 0;
-
+            
             using (StreamReader sr = new StreamReader( filename ))
             {
                 var list = new List<string>( 10000000 );
@@ -214,9 +216,23 @@ namespace SortBigFile
                         WriteListToFile( list, smallfile );
 
                         string sortedfile = smallfile + "_sorted";
-                        Task task = Task.Run( () => SortSmallFile( smallfile, sortedfile, false ) );
+                        var smallfile1 = smallfile; // otherwise there is an access to modified closure
+                        Task task = Task.Run( () => SortSmallFile( smallfile1, sortedfile, false ) );
                         TaskList.Add( task );
                         files.Add( sortedfile );
+
+                        if (files.Count >= _mergepool)
+                        {
+                            Task.WaitAll( TaskList.ToArray() );
+                            TaskList.Clear();
+                            string mergefilename = "m_" + mergedfiles.Count.ToString( "0000" );
+                            mergefilename = Path.Combine( sortareadir, mergefilename );
+                            mergedfiles.Add( mergefilename );
+                            List<string> filestomerge = files.ConvertAll( x => x );
+                            Task taskm = Task.Run( () => MergePlain( filestomerge, mergefilename, false ) );
+                            TaskListMerge.Add( taskm );
+                            files.Clear();
+                        }
 
                         filecounter++;
                         list.Clear();
@@ -237,11 +253,22 @@ namespace SortBigFile
                 list = null;
             }
 
+            if (files.Count > 0 && mergedfiles.Count > 0)
+            {
+                Task.WaitAll( TaskList.ToArray() );
+                TaskList.Clear();
+                string mergefilename = "m_" + mergedfiles.Count.ToString( "0000" );
+                mergedfiles.Add( mergefilename );
+                Task taskm = Task.Run( () => MergePlain( files, mergefilename, false ) );
+                TaskListMerge.Add( taskm );
+            }
+
             Task.WaitAll( TaskList.ToArray() );
+            Task.WaitAll( TaskListMerge.ToArray() );
 
             GC.Collect();
 
-            return files;
+            return mergedfiles.Count == 0 ? files : mergedfiles;
         }
 
         private void WriteListToFile( List<string> list, string smallfile )

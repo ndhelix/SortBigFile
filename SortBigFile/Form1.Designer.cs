@@ -42,7 +42,7 @@
             this.txtFile.Location = new System.Drawing.Point(188, 12);
             this.txtFile.Name = "txtFile";
             this.txtFile.Size = new System.Drawing.Size(355, 27);
-            this.txtFile.TabIndex = 0;
+            this.txtFile.TabIndex = 10;
             this.txtFile.Text = "D:\\D\\_BIGFILE\\smallfile.txt";
             // 
             // btnSort
@@ -50,7 +50,7 @@
             this.btnSort.Location = new System.Drawing.Point(22, 71);
             this.btnSort.Name = "btnSort";
             this.btnSort.Size = new System.Drawing.Size(144, 38);
-            this.btnSort.TabIndex = 1;
+            this.btnSort.TabIndex = 20;
             this.btnSort.Text = "Sort file";
             this.btnSort.UseVisualStyleBackColor = true;
             this.btnSort.Click += new System.EventHandler(this.btnSort_Click);
