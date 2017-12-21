@@ -38,7 +38,7 @@ namespace SortBigFile
             //List<string> smallfilelistsorted = SortSmallFiles( smallfilelist );
             //File.AppendAllText( "sorter.log", "SortSmallFiles took " + ( DateTime.Now - start ).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
             //start = DateTime.Now;
-            MergeFiles( smallfilelistsorted, sortedfilename + "merged", 0, true );
+            MergeFiles( smallfilelistsorted, sortedfilename, 0, true );
             File.AppendAllText( "sorter.log", "MergeFiles took " + ( DateTime.Now - start ).ToString( @"hh\:mm\:ss" ) + Environment.NewLine );
         }
 
